@@ -65,6 +65,12 @@ button {
     SIGUIENTE BOLETO
   </button>
   
+<input id="urlRegistro" type="url"
+  placeholder="Pega aquí la URL /exec de Apps Script"
+  style="width:100%;box-sizing:border-box;padding:14px;
+  margin:10px 0;border:1px solid #b9dce8;
+  border-radius:12px;font-size:15px;">
+
 <button onclick="enviarRegistro()">
   ENVIAR A REGISTRO
 </button>
@@ -75,21 +81,21 @@ button {
   </div>
 </div>
 
+<script>
+  
 function enviarRegistro() {
   if (!ultimoCodigo) {
-    alert('Primero debes escanear un boleto.');
+    alert('Primero escanea un boleto.');
     return;
   }
 
-  let enlace = localStorage.getItem('liamRegistroUrl');
+  const campo = document.getElementById('urlRegistro');
+  const enlace = campo.value.trim();
 
   if (!enlace) {
-    enlace = prompt(
-      'Pega la URL /exec de tu aplicación privada de Apps Script:'
-    );
-
-    if (!enlace) return;
-    enlace = enlace.trim();
+    alert('Primero pega la URL de Apps Script.');
+    campo.focus();
+    return;
   }
 
   try {
@@ -100,25 +106,18 @@ function enviarRegistro() {
       url.hostname !== 'script.google.com' ||
       !url.pathname.endsWith('/exec')
     ) {
-      alert('La dirección no corresponde a una aplicación web de Apps Script.');
+      alert('Revisa la URL de Apps Script.');
       return;
     }
 
-    localStorage.setItem('liamRegistroUrl', url.origin + url.pathname);
-
     url.searchParams.set('qr', ultimoCodigo);
+    window.location.assign(url.toString());
 
-    const ventana = window.open(url.toString(), '_blank');
-
-    if (!ventana) {
-      alert('Permite las ventanas emergentes para abrir el registro.');
-    }
   } catch (error) {
-    alert('Revisa la dirección de Google Apps Script.');
+    alert('La URL no es válida.');
   }
 }
 
-<script>
 let lector = null;
 let activo = false;
 let esperando = false;
