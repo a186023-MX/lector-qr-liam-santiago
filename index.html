@@ -2,14 +2,123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-  <title>Lector QR - Liam Santiago</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lector QR - Liam Santiago</title>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #eaf7fc;
+  text-align: center;
+  padding: 20px;
+  color: #174563;
+}
+.contenedor {
+  max-width: 450px;
+  margin: auto;
+  background: white;
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 4px 18px #b9dce8;
+}
+h1 { color: #1685ae; }
+#reader {
+  width: 100%;
+  margin: 20px auto;
+}
+button {
+  width: 100%;
+  padding: 16px;
+  margin: 8px 0;
+  background: #1486b4;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+}
+#resultado {
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 15px;
+  background: #e8f3fa;
+  overflow-wrap: anywhere;
+}
+</style>
 </head>
+
 <body>
-  <h1>Baby Shower de Liam Santiago</h1>
-  <h2>Lector QR de recepción</h2>
-  <p>Preparando la cámara de escaneo...</p>
+<div class="contenedor">
+  <h1>🐳 Baby Shower 🐳</h1>
+  <h2>LIAM SANTIAGO</h2>
+  <p>🎟️ Lector QR de recepción</p>
+
+  <div id="reader"></div>
+
+  <button onclick="iniciarCamara()">
+    📷 ACTIVAR CÁMARA
+  </button>
+
+  <button onclick="siguienteBoleto()">
+    SIGUIENTE BOLETO
+  </button>
+
+  <div id="resultado">
+    Presiona ACTIVAR CÁMARA
+  </div>
+</div>
+
+<script>
+let lector = null;
+let activo = false;
+let esperando = false;
+
+async function iniciarCamara() {
+  const resultado = document.getElementById('resultado');
+
+  if (activo) return;
+
+  if (typeof Html5Qrcode === 'undefined') {
+    resultado.textContent = 'Error al cargar el lector.';
+    return;
+  }
+
+  resultado.textContent = 'Abriendo cámara...';
+
+  lector = new Html5Qrcode('reader');
+
+  try {
+    await lector.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: 250 },
+      function(codigo) {
+        if (esperando) return;
+
+        esperando = true;
+        resultado.textContent =
+          'QR LEÍDO: ' + codigo +
+          ' | Presiona SIGUIENTE BOLETO para continuar.';
+        resultado.style.background = '#dcfce7';
+      },
+      function(error) {}
+    );
+
+    activo = true;
+  } catch (error) {
+    resultado.textContent =
+      'No se pudo abrir la cámara: ' + error;
+  }
+}
+
+function siguienteBoleto() {
+  document.getElementById('resultado').textContent =
+    'Listo para leer el siguiente boleto';
+  document.getElementById('resultado').style.background =
+    '#e8f3fa';
+  esperando = false;
+}
+</script>
 </body>
 </html>
