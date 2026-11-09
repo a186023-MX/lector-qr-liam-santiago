@@ -89,8 +89,14 @@ function enviarRegistro() {
     return;
   }
 
-  const campo = document.getElementById('urlRegistro');
-  const enlace = campo.value.trim();
+  
+const campo = document.getElementById('urlRegistro');
+const enlace = (
+  campo.value.trim() ||
+  localStorage.getItem('liamRegistroUrl') ||
+  ''
+).trim();
+
 
   if (!enlace) {
     alert('Primero pega la URL de Apps Script.');
@@ -110,8 +116,15 @@ function enviarRegistro() {
       return;
     }
 
-    url.searchParams.set('qr', ultimoCodigo);
-    window.location.assign(url.toString());
+    
+localStorage.setItem(
+  'liamRegistroUrl',
+  url.origin + url.pathname
+);
+
+url.searchParams.set('qr', ultimoCodigo);
+window.location.assign(url.toString());
+
 
   } catch (error) {
     alert('La URL no es válida.');
