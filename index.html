@@ -64,16 +64,65 @@ button {
   <button onclick="siguienteBoleto()">
     SIGUIENTE BOLETO
   </button>
+  
+<button onclick="enviarRegistro()">
+  ENVIAR A REGISTRO
+</button>
+
 
   <div id="resultado">
     Presiona ACTIVAR CÁMARA
   </div>
 </div>
 
+function enviarRegistro() {
+  if (!ultimoCodigo) {
+    alert('Primero debes escanear un boleto.');
+    return;
+  }
+
+  let enlace = localStorage.getItem('liamRegistroUrl');
+
+  if (!enlace) {
+    enlace = prompt(
+      'Pega la URL /exec de tu aplicación privada de Apps Script:'
+    );
+
+    if (!enlace) return;
+    enlace = enlace.trim();
+  }
+
+  try {
+    const url = new URL(enlace);
+
+    if (
+      url.protocol !== 'https:' ||
+      url.hostname !== 'script.google.com' ||
+      !url.pathname.endsWith('/exec')
+    ) {
+      alert('La dirección no corresponde a una aplicación web de Apps Script.');
+      return;
+    }
+
+    localStorage.setItem('liamRegistroUrl', url.origin + url.pathname);
+
+    url.searchParams.set('qr', ultimoCodigo);
+
+    const ventana = window.open(url.toString(), '_blank');
+
+    if (!ventana) {
+      alert('Permite las ventanas emergentes para abrir el registro.');
+    }
+  } catch (error) {
+    alert('Revisa la dirección de Google Apps Script.');
+  }
+}
+
 <script>
 let lector = null;
 let activo = false;
 let esperando = false;
+let ultimoCodigo = '';
 
 async function iniciarCamara() {
   const resultado = document.getElementById('resultado');
@@ -96,6 +145,7 @@ async function iniciarCamara() {
       function(codigo) {
         if (esperando) return;
 
+        ultimoCodigo = codigo;
         esperando = true;
         resultado.textContent =
           'QR LEÍDO: ' + codigo +
